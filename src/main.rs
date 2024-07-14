@@ -1,10 +1,10 @@
 #![allow(warnings)]
+mod http;
 mod log;
 mod print;
-mod server;
 mod utils;
 
 #[tokio::main]
 async fn main() {
-    server::listen::run().await;
+    http::listen::run().await;
 }

@@ -1,3 +1,4 @@
+use super::request;
 use crate::print::{
     self,
     print::{GREEN, WHITE},
@@ -5,15 +6,16 @@ use crate::print::{
 use std::env;
 use std::{collections::HashMap, fmt::format};
 use urlencoding::decode;
-use warp::{filters, Filter};
+use warp::{filters, reject::Rejection, reply::Reply, Filter};
 
 const DEFAULT_PORT: u16 = 80;
 const IP_ARR: [i32; 4] = [0, 0, 0, 0];
 const PATH_METHOD: &str = "/Proxy/proxyRequest";
-const SOURCE_URL_KEY_NAME: &str = "url";
-const SOURCE_REQUEST_HEADER_KEY_NAME: &str = "request_header";
-const SOURCE_RESPONSE_HEADER_KEY_NAME: &str = "response_header";
-const SOURCE_DATA_KEY_NAME: &str = "data";
+const URL_KEY_NAME: &str = "url";
+const REQUEST_HEADER_KEY_NAME: &str = "request_header";
+const DATA_KEY_NAME: &str = "data";
+const RESPONSE_HEADER_KEY_NAME: &str = "response_header";
+const IS_ORIGINAL: &str = "original";
 
 /**
  * 分割参数
@@ -44,33 +46,42 @@ fn get_param_decode_value(key: &str, query_map: &HashMap<String, String>) -> Str
 /**
  * 处理请求
  */
-fn handle_request(query_map: &HashMap<String, String>) -> String {
+async fn handle_request(query_map: HashMap<String, String>) -> Result<impl Reply, Rejection> {
     // 请求地址
-    let mut source_url_str: String = get_param_decode_value(SOURCE_URL_KEY_NAME, query_map);
+    let mut url_str: String = get_param_decode_value(URL_KEY_NAME, &query_map);
+
+    // 原始响应
+    let mut is_original_str: bool = get_param_decode_value(IS_ORIGINAL, &query_map).len() > 0;
 
     // 请求头
-    let mut source_request_header_str: String =
-        get_param_decode_value(SOURCE_REQUEST_HEADER_KEY_NAME, query_map);
-    let mut source_request_header_map: HashMap<String, String> =
-        split_params(&source_request_header_str);
-
-    // 响应头
-    let mut source_response_header_str: String =
-        get_param_decode_value(SOURCE_RESPONSE_HEADER_KEY_NAME, query_map);
-    let mut source_response_header_map: HashMap<String, String> =
-        split_params(&source_response_header_str);
+    let mut request_header_str: String =
+        get_param_decode_value(REQUEST_HEADER_KEY_NAME, &query_map);
+    let mut request_header_map: HashMap<String, String> = split_params(&request_header_str);
 
     // POST数据
-    let mut source_data_str: String = get_param_decode_value(SOURCE_DATA_KEY_NAME, query_map);
-    let mut source_data_map: HashMap<String, String> = split_params(&source_data_str);
+    let mut data_str: String = get_param_decode_value(DATA_KEY_NAME, &query_map);
+    let mut data_map: HashMap<String, String> = split_params(&data_str);
+
+    // 响应头
+    let mut response_header_str: String =
+        get_param_decode_value(RESPONSE_HEADER_KEY_NAME, &query_map);
+    let mut response_header_map: HashMap<String, String> = split_params(&response_header_str);
 
     // 记录日志
     let msg: String = format!(
-        "Request url: {}\nRequest header: {:?}\nResponse header: {:?}\nRequest data: {:?}\n",
-        source_url_str, source_request_header_map, source_response_header_map, source_data_map
+        "Request url: {}\nRequest header: {:?}\nRequest data: {:?}\nResponse header: {:?}",
+        url_str, request_header_map, data_map, response_header_map
     );
     print::print::println(&msg, &WHITE);
-    String::new()
+
+    request::request(
+        &url_str,
+        &is_original_str,
+        &request_header_map,
+        &data_map,
+        &response_header_map,
+    )
+    .await
 }
 
 /**
@@ -95,7 +106,7 @@ pub async fn run() {
     // 监听路由
     let route = warp::get()
         .and(warp::query::<HashMap<String, String>>())
-        .map(|params: HashMap<String, String>| -> String { handle_request(&params) });
+        .and_then(handle_request);
 
     warp::serve(route).run(([0, 0, 0, 0], port)).await;
 }
