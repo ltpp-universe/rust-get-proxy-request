@@ -9,6 +9,7 @@ use reqwest::{
     header::{HeaderMap, HeaderName, HeaderValue},
     Client,
 };
+use serde::de::value;
 use serde::Serialize;
 use serde_json::to_string;
 use std::collections::HashMap;
@@ -24,6 +25,7 @@ const FAILED_TO_SEND_REQUEST: &str = "FAILED_TO_SEND_REQUEST";
 const INVALID_URL: &str = "INVALID_URL";
 const REQUEST_SUCCESS: &str = "REQUEST_SUCCESS";
 const REQUEST_FAILED: &str = "REQUEST_FAILED";
+const CONTENT_LENGTH: &str = "content-length";
 
 /**
  * 检测URL是否合法
@@ -68,14 +70,25 @@ pub async fn request(
     data_map: &HashMap<String, String>,
     response_header_map: &HashMap<String, String>,
 ) -> Result<impl Reply, Rejection> {
+    let mut res_builder = WarpResponse::builder();
     if !is_valid_url(url_str) {
+        // 设置响应头
+        for (key, value) in response_header_map {
+            let key_str: String = key.to_lowercase();
+            if key_str == CONTENT_LENGTH {
+                continue;
+            }
+            res_builder = res_builder.header(key_str, value);
+        }
+
         // 返回原始响应
         if *is_original_str {
             print::println(&REQUEST_FAILED, &YELLOW);
-            return Ok(WarpResponse::builder()
+            return Ok(res_builder
                 .body(str_to_bytes(REQUEST_FAILED))
                 .unwrap_or_else(|_| WarpResponse::new(Bytes::new())));
         }
+
         // 包装JSON响应
         let response: Response = Response {
             status: 404,
@@ -87,7 +100,9 @@ pub async fn request(
         };
         let response_bytes: Bytes = reply_json_to_bytes(&response);
         print::println(&bytes_to_string(&response_bytes), &YELLOW);
-        return Ok(WarpResponse::builder()
+
+        // 响应
+        return Ok(res_builder
             .body(response_bytes)
             .unwrap_or_else(|_| WarpResponse::new(Bytes::new())));
     }
@@ -126,18 +141,28 @@ pub async fn request(
 
     // 合并响应头
     let mut combined_headers: HashMap<String, String> = HashMap::new();
-    for (key, value) in response_header_map.iter() {
-        combined_headers.insert(key.clone(), value.clone());
-    }
     for (key, value) in response_headers.iter() {
-        combined_headers.insert(key.to_string(), value.to_str().unwrap().to_string());
+        let key_str: String = key.to_string().to_lowercase();
+        let value_str: String = value.to_str().unwrap().to_string();
+        combined_headers.insert(key_str, value_str);
+    }
+    for (key, value) in response_header_map.iter() {
+        combined_headers.insert(key.to_lowercase(), value.clone());
+    }
+
+    // 设置响应头
+    for (key, value) in combined_headers.iter() {
+        if key.to_lowercase() == CONTENT_LENGTH {
+            continue;
+        }
+        res_builder = res_builder.header(key, value);
     }
 
     // 返回原始响应
     if *is_original_str {
         let body_bytes: Bytes = response.bytes().await.unwrap_or_else(|_| Bytes::new()); // 获取响应体的Bytes
         print::println(&bytes_to_string(&body_bytes), &GREEN);
-        return Ok(WarpResponse::builder()
+        return Ok(res_builder
             .body(body_bytes)
             .unwrap_or_else(|_| WarpResponse::new(Bytes::new())));
     }
@@ -153,7 +178,9 @@ pub async fn request(
     };
     let response_bytes: Bytes = reply_json_to_bytes(&response);
     print::println(&format!("{:?}", response), &GREEN);
-    return Ok(WarpResponse::builder()
+
+    // 响应
+    return Ok(res_builder
         .body(response_bytes)
         .unwrap_or_else(|_| WarpResponse::new(Bytes::new())));
 }
