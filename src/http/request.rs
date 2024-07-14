@@ -133,11 +133,6 @@ pub async fn request(
         combined_headers.insert(key.to_string(), value.to_str().unwrap().to_string());
     }
 
-    // 打印合并后的响应头
-    for (key, value) in combined_headers.iter() {
-        println!("{}: {}", key, value);
-    }
-
     // 返回原始响应
     if *is_original_str {
         let body_bytes: Bytes = response.bytes().await.unwrap_or_else(|_| Bytes::new()); // 获取响应体的Bytes
