@@ -2,6 +2,7 @@
 mod http;
 mod log;
 mod print;
+mod shell;
 mod utils;
 
 #[tokio::main]

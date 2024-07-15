@@ -91,7 +91,7 @@ pub async fn request(
 
         // 包装JSON响应
         let response: Response = Response {
-            status: 404,
+            status: 200,
             url: url_str.to_owned(),
             request_header: request_header_map.clone(),
             response: REQUEST_FAILED.to_owned(),

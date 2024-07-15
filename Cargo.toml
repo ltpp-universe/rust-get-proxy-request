@@ -14,3 +14,4 @@ serde = { version = "1.0.204", features = ["derive"] }
 regex = "1.10.5"
 bytes = "1.6.1"
 hyper = "1.4.1"
+lazy_static = "1.5.0"

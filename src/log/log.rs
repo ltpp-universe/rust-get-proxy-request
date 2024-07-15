@@ -1,3 +1,4 @@
+use crate::shell::parse;
 use crate::utils::{file, time};
 use std::{
     fmt,
@@ -21,7 +22,7 @@ pub fn write(log_msg: &str) {
             return;
         }
     };
-    let mut log_dir_path: String = String::from("/log");
+    let mut log_dir_path: String = parse::get_log_dir_path();
     if let Some(unix_path_str) = path::PathBuf::from(&log_dir_path).to_str() {
         log_dir_path = unix_path_str.replace("\\", "/");
     }

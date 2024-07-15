@@ -3,12 +3,12 @@ use crate::print::{
     self,
     print::{GREEN, WHITE},
 };
+use crate::shell::parse;
 use std::env;
 use std::{collections::HashMap, fmt::format};
 use urlencoding::decode;
 use warp::{filters, reject::Rejection, reply::Reply, Filter};
 
-const DEFAULT_PORT: u16 = 80;
 const IP_ARR: [i32; 4] = [0, 0, 0, 0];
 const PATH_METHOD: &str = "/Proxy/proxyRequest";
 const URL_KEY_NAME: &str = "url";
@@ -96,10 +96,7 @@ pub async fn run() {
         .join(".");
     // 端口
     let args: Vec<String> = env::args().collect();
-    let port: u16 = args
-        .get(1)
-        .and_then(|arg| arg.parse().ok())
-        .unwrap_or(DEFAULT_PORT);
+    let port: u16 = parse::get_port();
 
     print::print::println(&format!("Listen: http://{}:{}", ip_str, port), &GREEN);
 
