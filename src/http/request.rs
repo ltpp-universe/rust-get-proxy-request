@@ -26,6 +26,8 @@ const INVALID_URL: &str = "INVALID_URL";
 const REQUEST_SUCCESS: &str = "REQUEST_SUCCESS";
 const REQUEST_FAILED: &str = "REQUEST_FAILED";
 const CONTENT_LENGTH: &str = "content-length";
+const CONTENT_TYPE: &str = "content-type";
+const CONTENT_TYPE_VALUE: &str = "application/json; charset=utf-8";
 
 /**
  * 检测URL是否合法
@@ -75,11 +77,12 @@ pub async fn request(
         // 设置响应头
         for (key, value) in response_header_map {
             let key_str: String = key.to_lowercase();
-            if key_str == CONTENT_LENGTH {
+            if key_str == CONTENT_LENGTH || key_str == CONTENT_TYPE {
                 continue;
             }
             res_builder = res_builder.header(key_str, value);
         }
+        res_builder = res_builder.header(CONTENT_TYPE, CONTENT_TYPE_VALUE);
 
         // 返回原始响应
         if *is_original_str {
@@ -106,6 +109,7 @@ pub async fn request(
             .body(response_bytes)
             .unwrap_or_else(|_| WarpResponse::new(Bytes::new())));
     }
+
     // 创建请求客户端
     let client: Client = Client::new();
 
@@ -175,10 +179,14 @@ pub async fn request(
 
     // 设置响应头
     for (key, value) in combined_headers.iter() {
-        if key.to_lowercase() == CONTENT_LENGTH {
+        let key_str: String = key.to_lowercase();
+        if key_str == CONTENT_LENGTH {
             continue;
         }
-        res_builder = res_builder.header(key, value);
+        res_builder = match !*is_original_str && key_str == CONTENT_TYPE {
+            true => res_builder.header(CONTENT_TYPE, CONTENT_TYPE_VALUE),
+            _ => res_builder.header(key_str, value),
+        };
     }
 
     // 返回原始响应
