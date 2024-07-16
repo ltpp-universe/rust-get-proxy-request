@@ -112,10 +112,15 @@ pub async fn request(
     // 创建请求头
     let mut headers: HeaderMap = HeaderMap::new();
     for (key, value) in request_header_map.iter() {
-        headers.insert(
-            HeaderName::from_bytes(key.as_bytes()).unwrap(),
-            HeaderValue::from_str(value).unwrap(),
-        );
+        match HeaderName::from_bytes(key.as_bytes()) {
+            Ok(header_name) => match HeaderValue::from_str(value) {
+                Ok(header_value) => {
+                    headers.insert(header_name, header_value);
+                }
+                Err(e) => {}
+            },
+            Err(e) => {}
+        }
     }
 
     // 创建请求体
@@ -124,14 +129,32 @@ pub async fn request(
         form_data.insert(key.as_str(), value.as_str());
     }
 
-    // 发送POST请求
-    let response: reqwest::Response = client
-        .post(url_str)
-        .headers(headers)
-        .form(&form_data)
-        .send()
-        .await
-        .expect(FAILED_TO_SEND_REQUEST);
+    let is_get: bool = data_map.is_empty();
+
+    // 发送请求
+    let response: reqwest::Response = match is_get {
+        true =>
+        // GET请求
+        {
+            client
+                .get(url_str)
+                .headers(headers)
+                .send()
+                .await
+                .expect(FAILED_TO_SEND_REQUEST)
+        }
+        _ =>
+        // POST请求
+        {
+            client
+                .post(url_str)
+                .headers(headers)
+                .form(&form_data)
+                .send()
+                .await
+                .expect(FAILED_TO_SEND_REQUEST)
+        }
+    };
 
     // 获取响应头
     let mut response_headers: HeaderMap = HeaderMap::new();
