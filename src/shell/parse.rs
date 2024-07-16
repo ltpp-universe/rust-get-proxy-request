@@ -3,7 +3,7 @@ use std::env;
 use std::sync::Mutex;
 
 const DEFAULT_PORT: u16 = 80;
-const DEFAULT_LOG_DIR_PATH: &str = "/logs";
+const DEFAULT_LOG_DIR_PATH: &str = "./logs";
 
 lazy_static! {
     static ref PORT: Mutex<u16> = Mutex::new(get_port_internal());
@@ -31,7 +31,11 @@ pub fn get_port_internal() -> u16 {
  * 获取端口
  */
 pub fn get_port() -> u16 {
-    PORT.lock().unwrap().clone()
+    if let Ok(res) = PORT.lock() {
+        res.clone()
+    } else {
+        DEFAULT_PORT
+    }
 }
 
 /**
@@ -50,7 +54,11 @@ pub fn get_log_dir_path_internal() -> String {
  * 获取日志路径
  */
 pub fn get_log_dir_path() -> String {
-    LOG_DIR_PATH.lock().unwrap().clone()
+    if let Ok(res) = LOG_DIR_PATH.lock() {
+        res.clone()
+    } else {
+        DEFAULT_LOG_DIR_PATH.to_owned()
+    }
 }
 
 pub fn new() -> CMD {

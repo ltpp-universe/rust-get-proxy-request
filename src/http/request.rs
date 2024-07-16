@@ -33,8 +33,11 @@ const CONTENT_TYPE_VALUE: &str = "application/json; charset=utf-8";
  * 检测URL是否合法
  */
 fn is_valid_url(url: &str) -> bool {
-    let re: Regex = Regex::new(r#"^(https?|ftp)://[^\s/$.?#].[^\s]*$"#).unwrap();
-    re.is_match(url)
+    if let Ok(res) = Regex::new(r#"^(https?|ftp)://[^\s/$.?#].[^\s]*$"#) {
+        res.is_match(url)
+    } else {
+        false
+    }
 }
 
 /**
@@ -170,7 +173,11 @@ pub async fn request(
     let mut combined_headers: HashMap<String, String> = HashMap::new();
     for (key, value) in response_headers.iter() {
         let key_str: String = key.to_string().to_lowercase();
-        let value_str: String = value.to_str().unwrap().to_string();
+        let value_str: String = if let Ok(str) = value.to_str() {
+            str.to_string()
+        } else {
+            String::new()
+        };
         combined_headers.insert(key_str, value_str);
     }
     for (key, value) in response_header_map.iter() {
