@@ -1,7 +1,7 @@
 use super::request;
 use crate::print::{
     self,
-    print::{GREEN, WHITE},
+    print::{CYAN, GREEN},
 };
 use crate::shell::parse;
 use std::env;
@@ -72,7 +72,7 @@ async fn handle_request(query_map: HashMap<String, String>) -> Result<impl Reply
         "Request url: {}\nRequest header: {:?}\nRequest data: {:?}\nResponse header: {:?}",
         url_str, request_header_map, data_map, response_header_map
     );
-    print::print::println(&msg, &WHITE);
+    print::print::println(&msg, &CYAN);
 
     request::request(
         &url_str,
