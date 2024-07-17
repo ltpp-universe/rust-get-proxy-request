@@ -1,7 +1,6 @@
 use crate::shell::parse;
 use crate::utils::{file, time};
 use std::{
-    fmt,
     fs::{File, OpenOptions},
     io::Write,
     path, sync,

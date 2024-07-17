@@ -10,11 +10,6 @@ lazy_static! {
     static ref LOG_DIR_PATH: Mutex<String> = Mutex::new(get_log_dir_path_internal());
 }
 
-struct CMD {
-    port: u16,
-    log_dir_path: String,
-}
-
 /**
  * 计算端口
  */
@@ -59,17 +54,4 @@ pub fn get_log_dir_path() -> String {
     } else {
         DEFAULT_LOG_DIR_PATH.to_owned()
     }
-}
-
-pub fn new() -> CMD {
-    let args: Vec<String> = env::args().collect();
-    let port: u16 = args
-        .get(1)
-        .and_then(|arg| arg.parse().ok())
-        .unwrap_or(DEFAULT_PORT);
-    let log_dir_path: String = args
-        .get(2)
-        .and_then(|arg| arg.parse().ok())
-        .unwrap_or(DEFAULT_LOG_DIR_PATH.to_owned());
-    CMD { port, log_dir_path }
 }

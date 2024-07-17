@@ -1,29 +1,19 @@
 use super::response::Response;
-use crate::print::print::{self, BLUE, CYAN, RED, YELLOW};
+use crate::print::print::{self, BLUE, RED, YELLOW};
 use crate::utils::time;
 
-use bytes::{Bytes, BytesMut};
-use hyper::StatusCode;
+use bytes::Bytes;
 use regex::Regex;
 use reqwest::{
     header::{HeaderMap, HeaderName, HeaderValue},
     Client,
 };
-use serde::de::value;
-use serde::Serialize;
 use serde_json::to_string;
 use std::collections::HashMap;
 use std::str;
-use warp::{
-    http::Response as WarpResponse,
-    reject::Rejection,
-    reply::{Json, Reply},
-    Filter,
-};
+use warp::{http::Response as WarpResponse, reject::Rejection, reply::Reply};
 
 const FAILED_TO_SEND_REQUEST: &str = "FAILED_TO_SEND_REQUEST";
-const INVALID_URL: &str = "INVALID_URL";
-const REQUEST_SUCCESS: &str = "REQUEST_SUCCESS";
 const REQUEST_FAILED: &str = "REQUEST_FAILED";
 const CONTENT_LENGTH: &str = "content-length";
 const CONTENT_TYPE: &str = "content-type";
@@ -124,9 +114,9 @@ pub async fn request(
                 Ok(header_value) => {
                     headers.insert(header_name, header_value);
                 }
-                Err(e) => {}
+                Err(_) => {}
             },
-            Err(e) => {}
+            Err(_) => {}
         }
     }
 

@@ -1,4 +1,3 @@
-#![allow(warnings)]
 mod http;
 mod log;
 mod print;
