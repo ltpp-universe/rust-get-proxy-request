@@ -1,5 +1,4 @@
 use super::response::Response;
-use crate::print::print::{self, BLUE, RED, YELLOW};
 use crate::utils::time;
 
 use bytes::Bytes;
@@ -46,16 +45,6 @@ fn str_to_bytes(s: &str) -> Bytes {
 }
 
 /**
- * 将 Bytes 转换为 String
- */
-fn bytes_to_string(bytes: &Bytes) -> String {
-    match str::from_utf8(bytes) {
-        Ok(res) => res.to_owned(),
-        _ => String::new(),
-    }
-}
-
-/**
  * 发送请求
  */
 pub async fn request(
@@ -79,7 +68,6 @@ pub async fn request(
 
         // 返回原始响应
         if *is_original_str {
-            print::println(&REQUEST_FAILED, &RED);
             return Ok(res_builder
                 .body(str_to_bytes(REQUEST_FAILED))
                 .unwrap_or_else(|_| WarpResponse::new(Bytes::new())));
@@ -95,7 +83,6 @@ pub async fn request(
             time: time::format_now_time(),
         };
         let response_bytes: Bytes = reply_json_to_bytes(&response);
-        print::println(&bytes_to_string(&response_bytes), &RED);
 
         // 响应
         return Ok(res_builder
@@ -189,7 +176,6 @@ pub async fn request(
     // 返回原始响应
     if *is_original_str {
         let body_bytes: Bytes = response.bytes().await.unwrap_or_else(|_| Bytes::new()); // 获取响应体的Bytes
-        print::println(&bytes_to_string(&body_bytes), &BLUE);
         return Ok(res_builder
             .body(body_bytes)
             .unwrap_or_else(|_| WarpResponse::new(Bytes::new())));
@@ -205,7 +191,6 @@ pub async fn request(
         time: time::format_now_time(),
     };
     let response_bytes: Bytes = reply_json_to_bytes(&response);
-    print::println(&format!("{:?}", response), &YELLOW);
 
     // 响应
     return Ok(res_builder

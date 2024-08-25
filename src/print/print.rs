@@ -4,12 +4,6 @@ use std::{fmt, sync};
 
 // 绿色
 pub const GREEN: &'static str = "\x1B[32m";
-// 红色
-pub const RED: &'static str = "\x1B[31m";
-// 黄色
-pub const YELLOW: &'static str = "\x1B[33m";
-// 蓝色
-pub const BLUE: &'static str = "\x1B[34m";
 // 结束
 const END: &'static str = "\x1B[0m";
 // 锁

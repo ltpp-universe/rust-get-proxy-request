@@ -85,7 +85,7 @@ pub async fn run() {
     // 端口
     let port: u16 = parse::get_port();
 
-    print::print::println(&format!("Listen: http://{}:{}", ip_str, port), &GREEN);
+    print::print::println(&format!("Listening: http://{}:{}", ip_str, port), &GREEN);
 
     // 监听路由
     let route = warp::get()
