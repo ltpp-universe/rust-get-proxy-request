@@ -10,8 +10,6 @@ pub const RED: &'static str = "\x1B[31m";
 pub const YELLOW: &'static str = "\x1B[33m";
 // 蓝色
 pub const BLUE: &'static str = "\x1B[34m";
-// 青色
-pub const CYAN: &'static str = "\x1B[36m";
 // 结束
 const END: &'static str = "\x1B[0m";
 // 锁

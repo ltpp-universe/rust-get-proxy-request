@@ -1,8 +1,5 @@
 use super::request;
-use crate::print::{
-    self,
-    print::{CYAN, GREEN},
-};
+use crate::print::{self, print::GREEN};
 use crate::shell::parse;
 use std::collections::HashMap;
 use urlencoding::decode;
@@ -64,13 +61,6 @@ async fn handle_request(query_map: HashMap<String, String>) -> Result<impl Reply
     let mut _response_header_str: String =
         get_param_decode_value(RESPONSE_HEADER_KEY_NAME, &query_map);
     let mut _response_header_map: HashMap<String, String> = split_params(&_response_header_str);
-
-    // 记录日志
-    let msg: String = format!(
-        "Request url: {}\nRequest header: {:?}\nRequest data: {:?}\nResponse header: {:?}",
-        _url_str, _request_header_map, _data_map, _response_header_map
-    );
-    print::print::println(&msg, &CYAN);
 
     request::request(
         &_url_str,
